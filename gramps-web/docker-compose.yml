@@ -31,15 +31,26 @@ services:
 
   web:
     <<: *gramps
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:5000/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 30s
     depends_on:
       - redis
 
   worker:
     <<: *gramps
     command: celery -A gramps_webapi.celery worker --loglevel=INFO --concurrency=2
+    # web and worker both create the GRAMPSWEB_TREE database if it is missing.
+    # Starting the worker only after web is ready prevents a fresh install from
+    # creating two databases with the same tree name.
     depends_on:
-      - web
-      - redis
+      web:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   redis:
     image: valkey/valkey:8.1.3@sha256:facc1d2c3462975c34e10fccb167bfa92b0e0dbd992fc282c29a61c3243afb11

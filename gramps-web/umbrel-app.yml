@@ -1,0 +1,51 @@
+manifestVersion: 1
+id: gramps-web
+storage:
+  dataRoot: data
+category: files
+name: Gramps Web
+version: "26.11.2"
+tagline: Collaborative, open-source genealogy in your browser
+description: >-
+  On first launch, Gramps Web walks you through creating an owner account for your family tree. Until that account exists, the app is protected by your Umbrel login.
+
+
+  Gramps Web is a web app for building and exploring your family tree together with relatives. It's the web companion to Gramps, the long-standing open-source desktop genealogy program, and works on the same database format, so you can sync with Gramps Desktop or move your research between them.
+
+
+  - Record people, families, events, places, sources and citations with full genealogical detail
+
+  - Explore your tree with interactive charts, a map of places, and a timeline of events
+
+  - Import an existing tree from a GEDCOM file or a Gramps XML backup, and export it again at any time
+
+  - Attach photos and documents, and mark the people who appear in them
+
+  - Invite relatives with their own accounts and permission levels, from read-only guests to editors
+
+  - Run reports, search the whole tree, and track research tasks
+
+
+  Your genealogy data stays on your Umbrel.
+releaseNotes: ""
+
+developer: Gramps Project
+website: https://www.grampsweb.org/
+dependencies: []
+repo: https://github.com/gramps-project/gramps-web
+support: https://gramps.discourse.group/c/gramps-web/28
+
+port: 8697
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+backupIgnore:
+  - data/thumbnail_cache/*
+  - data/cache/*
+  - data/scratch/*
+
+submitter: Kepler Sticka-Jones
+submission: https://github.com/getumbrel/umbrel-apps/pull/0

@@ -1,0 +1,46 @@
+version: "3.7"
+
+x-gramps: &gramps
+  image: ghcr.io/gramps-project/grampsweb:26.11.2@sha256:80a1d75ca0f67f9203aecca60f7639312a2769fe0af45b34608b0add64f7c07f
+  restart: on-failure
+  environment:
+    GRAMPSWEB_TREE: "Gramps Web"
+    GRAMPSWEB_SECRET_KEY: ${APP_SEED}
+    # Only used for links in emails sent by Gramps Web
+    GRAMPSWEB_BASE_URL: http://${DEVICE_DOMAIN_NAME}:${APP_PROXY_PORT}
+    GRAMPSWEB_CELERY_CONFIG__broker_url: redis://gramps-web_redis_1:6379/0
+    GRAMPSWEB_CELERY_CONFIG__result_backend: redis://gramps-web_redis_1:6379/0
+    GRAMPSWEB_RATELIMIT_STORAGE_URI: redis://gramps-web_redis_1:6379/1
+    GUNICORN_NUM_WORKERS: 2
+  volumes:
+    - ${APP_DATA_DIR}/data/users:/app/users
+    - ${APP_DATA_DIR}/data/indexdir:/app/indexdir
+    - ${APP_DATA_DIR}/data/thumbnail_cache:/app/thumbnail_cache
+    - ${APP_DATA_DIR}/data/cache:/app/cache
+    - ${APP_DATA_DIR}/data/grampsdb:/root/.gramps/grampsdb
+    - ${APP_DATA_DIR}/data/media:/app/media
+    # Imports, media archives and backup restores are staged by the web service
+    # and read by the worker, so both services must share the same /tmp.
+    - ${APP_DATA_DIR}/data/scratch:/tmp
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: gramps-web_web_1
+      APP_PORT: 5000
+
+  web:
+    <<: *gramps
+    depends_on:
+      - redis
+
+  worker:
+    <<: *gramps
+    command: celery -A gramps_webapi.celery worker --loglevel=INFO --concurrency=2
+    depends_on:
+      - web
+      - redis
+
+  redis:
+    image: valkey/valkey:8.1.3@sha256:facc1d2c3462975c34e10fccb167bfa92b0e0dbd992fc282c29a61c3243afb11
+    restart: on-failure
